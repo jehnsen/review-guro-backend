@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+
+scripts/
+
+# documentation
+ANALYTICS_API.md
+ANALYTICS_IMPLEMENTATION_COMPLETE.md
+CATEGORY_PROGRESS_API.md
+IMPLEMENTATION_SUMMARY.md
+MOCK_EXAM_API.md
+MOCK_EXAM_IMPLEMENTATION_COMPLETE.md
+MOCK_EXAM_IMPLEMENTATION_PLAN.md
+postman_collection.json

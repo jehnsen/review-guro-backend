@@ -1,0 +1,135 @@
+// Prisma Schema for ReviewGuro - Civil Service Exam Reviewer
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum QuestionCategory {
+  VERBAL_ABILITY
+  NUMERICAL_ABILITY
+  ANALYTICAL_ABILITY
+  GENERAL_INFORMATION
+  CLERICAL_ABILITY
+}
+
+enum ExamStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+/// User model - Represents registered users of the platform
+model User {
+  id             String    @id @default(uuid()) @db.Uuid
+  email          String    @unique @db.VarChar(255)
+  passwordHash   String    @map("password_hash") @db.VarChar(255)
+  role           UserRole  @default(USER)
+  isPremium      Boolean   @default(false) @map("is_premium")
+  premiumExpiry  DateTime? @map("premium_expiry")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  progress  UserProgress[]
+  mockExams MockExam[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+/// Question model - Stores exam questions with options and explanations
+model Question {
+  id              String           @id @default(uuid()) @db.Uuid
+  category        QuestionCategory
+  difficulty      Difficulty
+  questionText    String           @map("question_text") @db.Text
+  options         Json             @db.JsonB // Array of { id: string, text: string }
+  correctOptionId String           @map("correct_option_id") @db.VarChar(50)
+  explanationText String?          @map("explanation_text") @db.Text
+  aiExplanation   String?          @map("ai_explanation") @db.Text // Cached AI-generated explanation
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  userProgress UserProgress[]
+
+  @@index([category])
+  @@index([difficulty])
+  @@index([category, difficulty])
+  @@map("questions")
+}
+
+/// UserProgress model - Tracks user attempts on questions
+model UserProgress {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  questionId  String   @map("question_id") @db.Uuid
+  selectedOptionId String @map("selected_option_id") @db.VarChar(50)
+  isCorrect   Boolean  @map("is_correct")
+  attemptedAt DateTime @default(now()) @map("attempted_at")
+
+  // Relations
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([questionId])
+  @@index([userId, questionId])
+  @@index([attemptedAt])
+  @@map("user_progress")
+}
+
+/// MockExam model - Stores mock examination sessions
+model MockExam {
+  id                   String     @id @default(uuid()) @db.Uuid
+  userId               String     @map("user_id") @db.Uuid
+  totalQuestions       Int        @map("total_questions")
+  timeLimitMinutes     Int        @map("time_limit_minutes")
+  passingScore         Int        @map("passing_score") // Percentage (e.g., 80 for 80%)
+  categories           String     @db.Text // JSON stringified array or 'MIXED'
+  difficulty           Difficulty?
+  status               ExamStatus @default(IN_PROGRESS)
+  startedAt            DateTime   @default(now()) @map("started_at")
+  completedAt          DateTime?  @map("completed_at")
+  timeRemainingSeconds Int?       @map("time_remaining_seconds")
+  questions            String     @db.Text // JSON stringified array of question IDs
+  answers              String     @default("{}") @db.Text // JSON { questionId: selectedOptionId }
+  flaggedQuestions     String     @default("[]") @map("flagged_questions") @db.Text // JSON array
+  score                Int?       // Final percentage score
+  createdAt            DateTime   @default(now()) @map("created_at")
+  updatedAt            DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("mock_exams")
+}
