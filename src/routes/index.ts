@@ -9,6 +9,9 @@ import questionRoutes from './question.routes';
 import practiceRoutes from './practice.routes';
 import mockExamRoutes from './mockExam.routes';
 import analyticsRoutes from './analytics.routes';
+import userRoutes from './user.routes';
+import subscriptionRoutes from './subscription.routes';
+import paymentRoutes from './payment.routes';
 
 const router = Router();
 
@@ -27,9 +30,12 @@ router.get('/health', (_req, res) => {
 
 // Mount route modules
 router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
 router.use('/questions', questionRoutes);
 router.use('/practice', practiceRoutes);
 router.use('/mock-exams', mockExamRoutes);
 router.use('/analytics', analyticsRoutes);
+router.use('/subscription', subscriptionRoutes);
+router.use('/payments', paymentRoutes);
 
 export default router;

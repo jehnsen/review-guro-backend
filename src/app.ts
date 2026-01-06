@@ -6,6 +6,7 @@
 import express, { Application } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import path from 'path';
 import { config } from './config/env';
 import routes from './routes';
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware';
@@ -61,6 +62,13 @@ export const createApp = (): Application => {
       next();
     });
   }
+
+  // ===========================================
+  // STATIC FILE SERVING
+  // ===========================================
+
+  // Serve uploaded files (profile photos, etc.)
+  app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
   // ===========================================
   // API ROUTES

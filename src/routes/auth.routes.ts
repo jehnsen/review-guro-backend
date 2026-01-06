@@ -30,4 +30,32 @@ router.post('/login', authController.login.bind(authController));
  */
 router.get('/me', authenticateToken, authController.getProfile.bind(authController));
 
+/**
+ * @route   POST /api/auth/change-password
+ * @desc    Change user password
+ * @access  Private
+ *
+ * Request body:
+ * {
+ *   "currentPassword": "oldPassword123",
+ *   "newPassword": "newPassword456",
+ *   "confirmPassword": "newPassword456"
+ * }
+ */
+router.post('/change-password', authenticateToken, authController.changePassword.bind(authController));
+
+/**
+ * @route   GET /api/auth/sessions
+ * @desc    Get active sessions
+ * @access  Private
+ */
+router.get('/sessions', authenticateToken, authController.getSessions.bind(authController));
+
+/**
+ * @route   POST /api/auth/signout
+ * @desc    Sign out user
+ * @access  Private
+ */
+router.post('/signout', authenticateToken, authController.signout.bind(authController));
+
 export default router;

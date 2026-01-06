@@ -85,6 +85,57 @@ class AuthController {
       next(error);
     }
   }
+
+  /**
+   * POST /api/auth/change-password
+   * Change user password
+   */
+  async changePassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+
+      await authService.changePassword(userId, currentPassword, newPassword, confirmPassword);
+
+      sendSuccess(res, null, 'Password changed successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/auth/sessions
+   * Get active sessions
+   */
+  async getSessions(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+
+      const sessions = await authService.getSessions(userId);
+
+      sendSuccess(res, { sessions }, 'Sessions retrieved successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/auth/signout
+   * Sign out user
+   */
+  async signout(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+
+      // In a production app, you'd invalidate the refresh token here
+      // For now, we'll just return success (client clears token)
+      await authService.signout(userId);
+
+      sendSuccess(res, null, 'Signed out successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const authController = new AuthController();

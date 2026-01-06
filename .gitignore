@@ -34,11 +34,8 @@ prisma/*.db-journal
 scripts/
 
 # documentation
-ANALYTICS_API.md
-ANALYTICS_IMPLEMENTATION_COMPLETE.md
-CATEGORY_PROGRESS_API.md
-IMPLEMENTATION_SUMMARY.md
-MOCK_EXAM_API.md
-MOCK_EXAM_IMPLEMENTATION_COMPLETE.md
-MOCK_EXAM_IMPLEMENTATION_PLAN.md
+documentation/
 postman_collection.json
+
+# upload
+uploads/

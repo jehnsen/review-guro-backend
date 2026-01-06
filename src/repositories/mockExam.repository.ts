@@ -108,7 +108,7 @@ export class MockExamRepository {
         ...(filters?.status && { status: filters.status }),
       },
       orderBy: {
-        createdAt: 'desc',
+        startedAt: 'desc',
       },
       take: filters?.limit || 10,
     });

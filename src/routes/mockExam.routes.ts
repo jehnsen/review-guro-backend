@@ -33,6 +33,15 @@ router.use(authenticateToken);
 router.post('/', mockExamController.create.bind(mockExamController));
 
 /**
+ * @route   GET /api/mock-exams/in-progress
+ * @desc    Check if user has an in-progress exam
+ * @access  Private
+ *
+ * Returns: { hasInProgressExam: boolean, examId?: string, startedAt?: string, timeRemainingSeconds?: number }
+ */
+router.get('/in-progress', mockExamController.checkInProgress.bind(mockExamController));
+
+/**
  * @route   GET /api/mock-exams/history
  * @desc    Get user's exam history
  * @access  Private

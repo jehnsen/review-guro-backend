@@ -163,6 +163,22 @@ export class MockExamController {
       next(error);
     }
   }
+
+  /**
+   * GET /api/mock-exams/in-progress
+   * Check if user has an in-progress exam
+   */
+  async checkInProgress(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+
+      const result = await mockExamService.getInProgressExam(userId);
+
+      sendSuccess(res, result, 'In-progress exam check completed');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const mockExamController = new MockExamController();

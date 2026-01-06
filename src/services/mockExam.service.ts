@@ -518,6 +518,48 @@ export class MockExamService {
       status: ExamStatus.ABANDONED,
     };
   }
+
+  /**
+   * Check for in-progress exam
+   * Returns the most recent in-progress exam if one exists
+   */
+  async getInProgressExam(userId: string): Promise<{
+    hasInProgressExam: boolean;
+    examId?: string;
+    startedAt?: string;
+    timeRemainingSeconds?: number;
+  }> {
+    const exams = await mockExamRepository.findByUserId(userId, {
+      status: ExamStatus.IN_PROGRESS,
+      limit: 1,
+    });
+
+    if (exams.length === 0) {
+      return { hasInProgressExam: false };
+    }
+
+    const exam = exams[0];
+
+    // Calculate time remaining
+    const elapsedSeconds = Math.floor(
+      (Date.now() - exam.startedAt.getTime()) / 1000
+    );
+    const totalSeconds = exam.timeLimitMinutes * 60;
+    const timeRemainingSeconds = Math.max(0, totalSeconds - elapsedSeconds);
+
+    // If time has expired, auto-abandon the exam
+    if (timeRemainingSeconds === 0) {
+      await mockExamRepository.abandon(exam.id);
+      return { hasInProgressExam: false };
+    }
+
+    return {
+      hasInProgressExam: true,
+      examId: exam.id,
+      startedAt: exam.startedAt.toISOString(),
+      timeRemainingSeconds,
+    };
+  }
 }
 
 export const mockExamService = new MockExamService();

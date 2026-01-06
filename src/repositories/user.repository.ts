@@ -77,6 +77,104 @@ class UserRepository {
       createdAt: user.createdAt,
     };
   }
+
+  /**
+   * Get user profile with additional fields
+   */
+  async getProfile(userId: string) {
+    return prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        photoUrl: true,
+        examDate: true,
+        role: true,
+        isPremium: true,
+        premiumExpiry: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+  }
+
+  /**
+   * Update user profile
+   */
+  async updateProfile(userId: string, data: {
+    firstName?: string;
+    lastName?: string;
+    photoUrl?: string;
+    examDate?: Date;
+  }) {
+    return prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        photoUrl: true,
+        examDate: true,
+        isPremium: true,
+        premiumExpiry: true,
+      },
+    });
+  }
+
+  /**
+   * Update password
+   */
+  async updatePassword(userId: string, passwordHash: string) {
+    return prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+  }
+
+  /**
+   * Get or create user settings
+   */
+  async getSettings(userId: string) {
+    let settings = await prisma.userSettings.findUnique({
+      where: { userId },
+    });
+
+    // Create default settings if they don't exist
+    if (!settings) {
+      settings = await prisma.userSettings.create({
+        data: { userId },
+      });
+    }
+
+    return settings;
+  }
+
+  /**
+   * Update user settings
+   */
+  async updateSettings(userId: string, data: {
+    theme?: string;
+    dailyGoal?: number;
+    showExplanations?: boolean;
+    soundEffects?: boolean;
+    weeklyProgressReport?: boolean;
+    examReminders?: boolean;
+    dailyStudyReminder?: boolean;
+    reminderTime?: string;
+    pushNotifications?: boolean;
+  }) {
+    // Ensure settings exist
+    await this.getSettings(userId);
+
+    return prisma.userSettings.update({
+      where: { userId },
+      data,
+    });
+  }
 }
 
 export const userRepository = new UserRepository();

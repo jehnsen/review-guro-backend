@@ -148,6 +148,68 @@ class AuthService {
   }
 
   /**
+   * Change user password
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Promise<void> {
+    // Validate new passwords match
+    if (newPassword !== confirmPassword) {
+      throw new BadRequestError('New passwords do not match');
+    }
+
+    // Validate new password strength
+    this.validatePassword(newPassword);
+
+    // Get user
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new UnauthorizedError('User not found');
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isPasswordValid) {
+      throw new UnauthorizedError('Current password is incorrect');
+    }
+
+    // Hash new password
+    const newPasswordHash = await bcrypt.hash(newPassword, this.SALT_ROUNDS);
+
+    // Update password
+    await userRepository.updatePassword(userId, newPasswordHash);
+  }
+
+  /**
+   * Get active sessions for user
+   */
+  async getSessions(userId: string) {
+    // In a production app, you'd query refresh_tokens table
+    // For now, return mock data
+    return [
+      {
+        id: '1',
+        device: 'Chrome on macOS',
+        lastActive: 'Active now',
+        isCurrent: true,
+      },
+    ];
+  }
+
+  /**
+   * Sign out user (invalidate refresh token)
+   */
+  async signout(userId: string): Promise<void> {
+    // In production, you would:
+    // 1. Delete the refresh token from the database
+    // 2. Optionally blacklist the access token
+    // For now, this is a no-op (client clears token)
+  }
+
+  /**
    * Validate password strength
    */
   private validatePassword(password: string): void {

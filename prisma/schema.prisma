@@ -8,6 +8,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ============================================
@@ -48,6 +49,10 @@ model User {
   id             String    @id @default(uuid()) @db.Uuid
   email          String    @unique @db.VarChar(255)
   passwordHash   String    @map("password_hash") @db.VarChar(255)
+  firstName      String?   @map("first_name") @db.VarChar(100)
+  lastName       String?   @map("last_name") @db.VarChar(100)
+  photoUrl       String?   @map("photo_url") @db.VarChar(500)
+  examDate       DateTime? @map("exam_date")
   role           UserRole  @default(USER)
   isPremium      Boolean   @default(false) @map("is_premium")
   premiumExpiry  DateTime? @map("premium_expiry")
@@ -55,8 +60,11 @@ model User {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  progress  UserProgress[]
-  mockExams MockExam[]
+  progress       UserProgress[]
+  mockExams      MockExam[]
+  settings       UserSettings?
+  subscription   Subscription?
+  refreshTokens  RefreshToken[]
 
   @@index([email])
   @@index([role])
@@ -132,4 +140,79 @@ model MockExam {
   @@index([status])
   @@index([createdAt])
   @@map("mock_exams")
+}
+
+/// UserSettings model - User preferences and settings
+model UserSettings {
+  id                      String   @id @default(uuid()) @db.Uuid
+  userId                  String   @unique @map("user_id") @db.Uuid
+
+  // Appearance
+  theme                   String   @default("light") @db.VarChar(20) // "light" or "dark"
+
+  // Daily Goal
+  dailyGoal               Int      @default(25) @map("daily_goal") // questions per day
+
+  // Study Preferences
+  showExplanations        Boolean  @default(true) @map("show_explanations")
+  soundEffects            Boolean  @default(true) @map("sound_effects")
+
+  // Email Notifications
+  weeklyProgressReport    Boolean  @default(true) @map("weekly_progress_report")
+  examReminders           Boolean  @default(true) @map("exam_reminders")
+
+  // Study Reminders
+  dailyStudyReminder      Boolean  @default(true) @map("daily_study_reminder")
+  reminderTime            String?  @map("reminder_time") @db.VarChar(10) // "09:00 AM"
+
+  // Push Notifications
+  pushNotifications       Boolean  @default(true) @map("push_notifications")
+
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_settings")
+}
+
+/// Subscription model - User subscription/payment info
+model Subscription {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @unique @map("user_id") @db.Uuid
+  planName        String    @default("Season Pass") @map("plan_name") @db.VarChar(50)
+  planPrice       Decimal   @default(399) @map("plan_price") @db.Decimal(10, 2)
+  purchaseDate    DateTime  @map("purchase_date")
+  paymentMethod   String    @map("payment_method") @db.VarChar(50) // "GCash", "Maya", "Debit Card"
+  amountPaid      Decimal   @map("amount_paid") @db.Decimal(10, 2)
+  transactionId   String?   @map("transaction_id") @db.VarChar(255)
+  status          String    @default("active") @db.VarChar(20) // "active", "expired"
+  expiresAt       DateTime? @map("expires_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+/// RefreshToken model - For JWT refresh token management
+model RefreshToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique @db.VarChar(500)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
 }
