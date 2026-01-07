@@ -31,11 +31,8 @@ coverage/
 prisma/*.db
 prisma/*.db-journal
 
+# others
 scripts/
-
-# documentation
 documentation/
 postman_collection.json
-
-# upload
 uploads/
