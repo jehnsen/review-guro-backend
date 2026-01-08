@@ -33,7 +33,11 @@ export const createApp = (): Application => {
   app.use(
     cors({
       origin: config.server.isProduction
-        ? ['https://reviewguro.com', 'https://www.reviewguro.com'] // Production domains
+        ? [
+            'https://reviewguro.com',
+            'https://www.reviewguro.com',
+            /https:\/\/review-guro-webapp.*\.vercel\.app$/, // Allow Vercel preview deployments
+          ]
         : '*', // Allow all origins in development
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
