@@ -5,7 +5,6 @@
 
 import { subscriptionRepository } from '../repositories/subscription.repository';
 import { userRepository } from '../repositories/user.repository';
-import { NotFoundError } from '../utils/errors';
 
 class SubscriptionService {
   /**

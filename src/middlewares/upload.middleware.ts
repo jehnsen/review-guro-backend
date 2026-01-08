@@ -10,18 +10,18 @@ import { BadRequestError } from '../utils/errors';
 
 // Configure storage
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_req, _file, cb) => {
     // In production, you'd upload to cloud storage (S3, Cloudinary, etc.)
     cb(null, 'uploads/profiles');
   },
-  filename: (req, file, cb) => {
+  filename: (_req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
   },
 });
 
 // File filter
-const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+const fileFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
   // Accept images only
   const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
 

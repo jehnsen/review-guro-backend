@@ -18,7 +18,7 @@
  * - TTL ensures data eventually refreshes from source of truth (DB)
  */
 
-import { Question, Difficulty, QuestionCategory } from '@prisma/client';
+import { Question } from '@prisma/client';
 import { questionRepository } from '../repositories/question.repository';
 import { cacheService } from './cache.service';
 import { config } from '../config/env';

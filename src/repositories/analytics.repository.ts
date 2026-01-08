@@ -290,11 +290,10 @@ export class AnalyticsRepository {
     });
 
     const totalAttempts = attempts.length;
-    const totalTime = totalAttempts * 1.5; // 1.5 min per question
 
     return Array.from(categoryCount.entries()).map(([category, count]) => ({
       category,
-      timeSpentMinutes: Math.round(count * 1.5),
+      timeSpentMinutes: Math.round(count * 1.5), // Estimate 1.5 min per question
       percentage: Math.round((count / totalAttempts) * 100),
     }));
   }

@@ -77,6 +77,6 @@ export const config = {
     questionsTTL: env.CACHE_TTL_QUESTIONS,
     explanationsTTL: env.CACHE_TTL_EXPLANATIONS,
   },
-} as const;
+};
 
 export type Config = typeof config;

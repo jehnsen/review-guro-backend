@@ -143,7 +143,7 @@ class AuthService {
     };
 
     return jwt.sign(payload, config.jwt.secret, {
-      expiresIn: config.jwt.expiresIn,
+      expiresIn: config.jwt.expiresIn as jwt.SignOptions['expiresIn'],
     });
   }
 
@@ -186,8 +186,8 @@ class AuthService {
   /**
    * Get active sessions for user
    */
-  async getSessions(userId: string) {
-    // In a production app, you'd query refresh_tokens table
+  async getSessions(_userId: string) {
+    // In a production app, you'd query refresh_tokens table using userId
     // For now, return mock data
     return [
       {
@@ -202,9 +202,9 @@ class AuthService {
   /**
    * Sign out user (invalidate refresh token)
    */
-  async signout(userId: string): Promise<void> {
+  async signout(_userId: string): Promise<void> {
     // In production, you would:
-    // 1. Delete the refresh token from the database
+    // 1. Delete the refresh token from the database using userId
     // 2. Optionally blacklist the access token
     // For now, this is a no-op (client clears token)
   }

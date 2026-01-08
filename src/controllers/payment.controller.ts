@@ -13,7 +13,8 @@ export class PaymentController {
    */
   async processGCash(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { amount, phoneNumber, returnUrl } = req.body;
+      const { amount } = req.body;
+      // phoneNumber and returnUrl will be used when integrating real GCash API
 
       // In production, integrate with GCash payment gateway API
       // For now, return mock payment URL
@@ -40,7 +41,8 @@ export class PaymentController {
    */
   async processMaya(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { amount, phoneNumber, returnUrl } = req.body;
+      const { amount } = req.body;
+      // phoneNumber and returnUrl will be used when integrating real Maya API
 
       // In production, integrate with Maya payment gateway API
       // For now, return mock payment URL
@@ -67,11 +69,12 @@ export class PaymentController {
    */
   async processCard(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const { amount, cardNumber, expiryMonth, expiryYear, cvv, cardholderName } = req.body;
+      const { amount } = req.body;
+      // cardNumber, expiryMonth, expiryYear, cvv, cardholderName will be used with real payment processor
 
       // In production, integrate with payment processor (Stripe, PayMongo, etc.)
       // For now, return mock success
-      const transactionId = `CARD-${Date.now()}`;
+      const transactionId = `CARD-${Date.now()}-${amount}`;
 
       sendSuccess(
         res,

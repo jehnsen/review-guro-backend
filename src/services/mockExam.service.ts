@@ -13,7 +13,6 @@ import {
   MockExamResultsResponse,
   MockExamHistoryResponse,
   QuestionResponse,
-  QuestionOption,
 } from '../types';
 
 export class MockExamService {

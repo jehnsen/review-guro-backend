@@ -75,7 +75,7 @@ export interface QuestionOption {
   text: string;
 }
 
-export interface QuestionFilters {
+export interface QuestionFilters extends Record<string, unknown> {
   category?: QuestionCategory;
   difficulty?: Difficulty;
   page?: number;
@@ -89,7 +89,7 @@ export interface QuestionResponse {
   questionText: string;
   options: QuestionOption[];
   correctOptionId?: string;
-  explanationText?: string;
+  explanationText?: string | null;
   aiExplanation?: string;
 }
 
