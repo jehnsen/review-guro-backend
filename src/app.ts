@@ -36,7 +36,7 @@ export const createApp = (): Application => {
         ? [
             'https://reviewguro.com',
             'https://www.reviewguro.com',
-            /https:\/\/review-guro-webapp.*\.vercel\.app$/, // Allow Vercel preview deployments
+            /https:\/\/reviewguro.*\.vercel\.app$/, // Allow Vercel preview deployments
           ]
         : '*', // Allow all origins in development
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
