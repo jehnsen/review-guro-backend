@@ -36,3 +36,6 @@ scripts/
 documentation/
 postman_collection.json
 uploads/
+PAYMENT_SYSTEM_STATUS.md
+PAYMONGO_INTEGRATION.md
+SEASON_PASS_FLOW.md

@@ -8,8 +8,8 @@ import path from 'path';
 import { Request } from 'express';
 import { BadRequestError } from '../utils/errors';
 
-// Configure storage
-const storage = multer.diskStorage({
+// Configure storage for profile photos
+const profileStorage = multer.diskStorage({
   destination: (_req, _file, cb) => {
     // In production, you'd upload to cloud storage (S3, Cloudinary, etc.)
     cb(null, 'uploads/profiles');
@@ -17,6 +17,17 @@ const storage = multer.diskStorage({
   filename: (_req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
     cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+// Configure storage for payment proofs
+const paymentProofStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    cb(null, 'uploads/payment-proofs');
+  },
+  filename: (_req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, 'proof-' + uniqueSuffix + path.extname(file.originalname));
   },
 });
 
@@ -33,11 +44,20 @@ const fileFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFil
   cb(null, true);
 };
 
-// Configure multer
+// Configure multer for profile photos
 export const uploadPhoto = multer({
-  storage,
+  storage: profileStorage,
   fileFilter,
   limits: {
     fileSize: 2 * 1024 * 1024, // 2MB max file size
   },
 }).single('photo');
+
+// Configure multer for payment proof uploads
+export const uploadPaymentProof = multer({
+  storage: paymentProofStorage,
+  fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB max file size for receipts
+  },
+}).single('proofImage');

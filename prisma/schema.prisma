@@ -60,11 +60,12 @@ model User {
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  progress       UserProgress[]
-  mockExams      MockExam[]
-  settings       UserSettings?
-  subscription   Subscription?
-  refreshTokens  RefreshToken[]
+  progress            UserProgress[]
+  mockExams           MockExam[]
+  settings            UserSettings?
+  subscription        Subscription?
+  refreshTokens       RefreshToken[]
+  paymentVerifications PaymentVerification[]
 
   @@index([email])
   @@index([role])
@@ -185,9 +186,11 @@ model Subscription {
   planName        String    @default("Season Pass") @map("plan_name") @db.VarChar(50)
   planPrice       Decimal   @default(399) @map("plan_price") @db.Decimal(10, 2)
   purchaseDate    DateTime  @map("purchase_date")
-  paymentMethod   String    @map("payment_method") @db.VarChar(50) // "GCash", "Maya", "Debit Card"
+  paymentMethod   String    @map("payment_method") @db.VarChar(50) // "card", "gcash", "grab_pay", "paymaya", "manual"
   amountPaid      Decimal   @map("amount_paid") @db.Decimal(10, 2)
-  transactionId   String?   @map("transaction_id") @db.VarChar(255)
+  transactionId   String?   @map("transaction_id") @db.VarChar(255) // PayMongo payment ID or manual ref
+  referenceNumber String?   @map("reference_number") @db.VarChar(50) // RG-xxxxx format
+  paymentProvider String    @default("paymongo") @map("payment_provider") @db.VarChar(20) // "paymongo" or "manual"
   status          String    @default("active") @db.VarChar(20) // "active", "expired"
   expiresAt       DateTime? @map("expires_at")
   createdAt       DateTime  @default(now()) @map("created_at")
@@ -198,6 +201,7 @@ model Subscription {
 
   @@index([userId])
   @@index([status])
+  @@index([referenceNumber])
   @@map("subscriptions")
 }
 
@@ -215,4 +219,44 @@ model RefreshToken {
   @@index([userId])
   @@index([token])
   @@map("refresh_tokens")
+}
+
+/// PaymentVerification model - Manual payment proof submission
+model PaymentVerification {
+  id                String   @id @default(uuid()) @db.Uuid
+  userId            String   @map("user_id") @db.Uuid
+  amount            Decimal  @db.Decimal(10, 2)
+  paymentMethod     String   @map("payment_method") @db.VarChar(50) // "GCash", "Maya"
+  referenceNumber   String   @map("reference_number") @db.VarChar(255) // User's transaction ref
+  proofImageUrl     String?  @map("proof_image_url") @db.Text // Screenshot URL
+  gcashNumber       String?  @map("gcash_number") @db.VarChar(20) // User's GCash number
+  status            String   @default("pending") @db.VarChar(20) // "pending", "approved", "rejected"
+  verifiedBy        String?  @map("verified_by") @db.Uuid // Admin user ID who verified
+  verifiedAt        DateTime? @map("verified_at")
+  rejectionReason   String?  @map("rejection_reason") @db.Text
+  activationCode    String   @unique @map("activation_code") @db.VarChar(20) // Unique code
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([activationCode])
+  @@map("payment_verifications")
+}
+
+/// Admin model - For admin users who verify payments
+model Admin {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255) // Hashed password
+  name      String   @db.VarChar(255)
+  role      String   @default("admin") @db.VarChar(20)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@map("admins")
 }

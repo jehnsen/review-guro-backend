@@ -12,6 +12,8 @@ import analyticsRoutes from './analytics.routes';
 import userRoutes from './user.routes';
 import subscriptionRoutes from './subscription.routes';
 import paymentRoutes from './payment.routes';
+import paymongoRoutes from './paymongo.routes';
+import paymentVerificationRoutes from './paymentVerification.routes';
 
 const router = Router();
 
@@ -37,5 +39,9 @@ router.use('/mock-exams', mockExamRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/subscription', subscriptionRoutes);
 router.use('/payments', paymentRoutes);
+
+// Payment system routes
+router.use('/payments/paymongo', paymongoRoutes);
+router.use('/payments/manual', paymentVerificationRoutes);
 
 export default router;

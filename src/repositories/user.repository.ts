@@ -175,6 +175,19 @@ class UserRepository {
       data,
     });
   }
+
+  /**
+   * Update premium status
+   */
+  async updatePremiumStatus(userId: string, isPremium: boolean, premiumExpiry: Date | null) {
+    return prisma.user.update({
+      where: { id: userId },
+      data: {
+        isPremium,
+        premiumExpiry,
+      },
+    });
+  }
 }
 
 export const userRepository = new UserRepository();

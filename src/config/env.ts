@@ -31,6 +31,17 @@ const envSchema = z.object({
   // Cache TTL (in seconds)
   CACHE_TTL_QUESTIONS: z.string().transform(Number).default('3600'),
   CACHE_TTL_EXPLANATIONS: z.string().transform(Number).default('86400'),
+
+  // PayMongo
+  PAYMONGO_SECRET_KEY: z.string(),
+  PAYMONGO_PUBLIC_KEY: z.string(),
+
+  // Payment
+  SEASON_PASS_PRICE: z.string().transform(Number).default('399'),
+  SEASON_PASS_CURRENCY: z.string().default('PHP'),
+
+  // Frontend
+  FRONTEND_URL: z.string().url('Invalid FRONTEND_URL format'),
 });
 
 // Parse and validate environment variables
@@ -76,6 +87,17 @@ export const config = {
   cache: {
     questionsTTL: env.CACHE_TTL_QUESTIONS,
     explanationsTTL: env.CACHE_TTL_EXPLANATIONS,
+  },
+  paymongo: {
+    secretKey: env.PAYMONGO_SECRET_KEY,
+    publicKey: env.PAYMONGO_PUBLIC_KEY,
+  },
+  payment: {
+    seasonPassPrice: env.SEASON_PASS_PRICE,
+    currency: env.SEASON_PASS_CURRENCY,
+  },
+  frontend: {
+    url: env.FRONTEND_URL,
   },
 };
 

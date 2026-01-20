@@ -12,6 +12,7 @@
     "prisma:studio": "prisma studio",
     "seed": "ts-node prisma/seed.ts",
     "generate:exam": "ts-node scripts/generate-full-exam.ts",
+    "generate:1000": "ts-node scripts/generate-1000-questions.ts",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -25,6 +26,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "axios": "^1.13.2",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

@@ -16,6 +16,15 @@ class SubscriptionRepository {
   }
 
   /**
+   * Find subscription by reference number
+   */
+  async findByReferenceNumber(referenceNumber: string) {
+    return prisma.subscription.findFirst({
+      where: { referenceNumber },
+    });
+  }
+
+  /**
    * Create subscription
    */
   async create(data: {
@@ -26,7 +35,10 @@ class SubscriptionRepository {
     paymentMethod: string;
     amountPaid: number;
     transactionId?: string;
-    expiresAt?: Date;
+    referenceNumber?: string;
+    paymentProvider?: string;
+    status?: string;
+    expiresAt?: Date | null;
   }) {
     return prisma.subscription.create({
       data,
