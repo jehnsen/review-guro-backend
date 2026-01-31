@@ -260,3 +260,66 @@ model Admin {
   @@index([email])
   @@map("admins")
 }
+
+/// DailyPracticeUsage model - Track daily practice question usage for free tier limits
+model DailyPracticeUsage {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  date            DateTime @db.Date // Date in UTC
+  questionsCount  Int      @default(0) @map("questions_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("daily_practice_usage")
+}
+
+/// SeasonPassCode model - Pre-generated codes for e-book bundle redemption
+model SeasonPassCode {
+  id            String    @id @default(uuid()) @db.Uuid
+  code          String    @unique @db.VarChar(20) // Redemption code (e.g., "RG-ABC123-XYZ789")
+  isRedeemed    Boolean   @default(false) @map("is_redeemed")
+  redeemedBy    String?   @map("redeemed_by") @db.Uuid // User ID who redeemed
+  redeemedAt    DateTime? @map("redeemed_at")
+  createdBy     String?   @map("created_by") @db.Uuid // Admin who generated the code
+  batchId       String?   @map("batch_id") @db.VarChar(50) // For bulk generation tracking
+  expiresAt     DateTime? @map("expires_at") // Optional expiration date
+  notes         String?   @db.Text // Optional notes (e.g., "E-book bundle promo 2024")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([code])
+  @@index([isRedeemed])
+  @@index([batchId])
+  @@map("season_pass_codes")
+}
+
+/// UserStreak model - Track user's daily activity streak
+model UserStreak {
+  id                String    @id @default(uuid()) @db.Uuid
+  userId            String    @unique @map("user_id") @db.Uuid
+  currentStreak     Int       @default(0) @map("current_streak")
+  longestStreak     Int       @default(0) @map("longest_streak")
+  lastActivityDate  DateTime? @map("last_activity_date") @db.Date
+  streakRepairedAt  DateTime? @map("streak_repaired_at")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("user_streaks")
+}
+
+/// DailyExplanationView model - Track explanation views for taste test feature
+model DailyExplanationView {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @map("user_id") @db.Uuid
+  date            DateTime @db.Date
+  viewCount       Int      @default(0) @map("view_count")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("daily_explanation_views")
+}

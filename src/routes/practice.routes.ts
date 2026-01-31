@@ -97,4 +97,17 @@ router.get('/stats', practiceController.getStats.bind(practiceController));
  */
 router.get('/progress/categories', practiceController.getCategoryProgress.bind(practiceController));
 
+/**
+ * @route   GET /api/practice/limits
+ * @desc    Get daily practice limits and current usage
+ * @access  Private (requires authentication)
+ *
+ * Returns:
+ * - isPremium: boolean
+ * - dailyLimit: number (-1 for unlimited)
+ * - usedToday: number
+ * - remainingToday: number (-1 for unlimited)
+ */
+router.get('/limits', practiceController.getDailyLimits.bind(practiceController));
+
 export default router;

@@ -42,6 +42,11 @@ const envSchema = z.object({
 
   // Frontend
   FRONTEND_URL: z.string().url('Invalid FRONTEND_URL format'),
+
+  // Free Tier Limits
+  FREE_TIER_PRACTICE_LIMIT_PER_DAY: z.string().transform(Number).default('15'),
+  FREE_TIER_MOCK_EXAM_QUESTIONS_LIMIT: z.string().transform(Number).default('20'),
+  FREE_TIER_MOCK_EXAMS_PER_MONTH: z.string().transform(Number).default('3'),
 });
 
 // Parse and validate environment variables
@@ -98,6 +103,11 @@ export const config = {
   },
   frontend: {
     url: env.FRONTEND_URL,
+  },
+  freeTier: {
+    practiceLimitPerDay: env.FREE_TIER_PRACTICE_LIMIT_PER_DAY,
+    mockExamQuestionsLimit: env.FREE_TIER_MOCK_EXAM_QUESTIONS_LIMIT,
+    mockExamsPerMonth: env.FREE_TIER_MOCK_EXAMS_PER_MONTH,
   },
 };
 

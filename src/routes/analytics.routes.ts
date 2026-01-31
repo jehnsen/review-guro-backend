@@ -86,17 +86,18 @@ router.get('/ai-insights', analyticsController.getAIInsights.bind(analyticsContr
 
 /**
  * @route   GET /api/analytics/streak
- * @desc    Get study streak information
+ * @desc    Get streak status with repair information
  * @access  Private
  *
  * Returns:
  * - currentStreak: Current consecutive days
  * - longestStreak: Longest streak achieved
  * - lastActivityDate: Last study session
- * - streakStatus: active/at_risk/broken
- * - daysUntilBreak: Days until streak breaks
+ * - canRepair: Whether streak can be repaired
+ * - missedDays: Number of days missed
+ * - repairCost: Cost to repair streak (points/currency)
  */
-router.get('/streak', analyticsController.getStreak.bind(analyticsController));
+router.get('/streak', analyticsController.getStreakStatus.bind(analyticsController));
 
 /**
  * @route   GET /api/analytics/time-tracking
@@ -109,6 +110,45 @@ router.get('/streak', analyticsController.getStreak.bind(analyticsController));
  * - breakdown: Time spent per category with percentages
  */
 router.get('/time-tracking', analyticsController.getTimeTracking.bind(analyticsController));
+
+/**
+ * @route   POST /api/analytics/streak/repair
+ * @desc    Repair a broken streak
+ * @access  Private
+ *
+ * Returns:
+ * - success: boolean
+ * - message: Success/error message
+ * - currentStreak: Updated streak count
+ * - repairCost: Cost charged for repair
+ */
+router.post('/streak/repair', analyticsController.repairStreak.bind(analyticsController));
+
+/**
+ * @route   GET /api/analytics/explanation-limits
+ * @desc    Get explanation access limits (taste test feature)
+ * @access  Private
+ *
+ * Returns:
+ * - isPremium: boolean
+ * - dailyLimit: Number of explanations allowed per day (-1 for unlimited)
+ * - viewedToday: Number viewed today
+ * - remainingToday: Number remaining today
+ */
+router.get('/explanation-limits', analyticsController.getExplanationLimits.bind(analyticsController));
+
+/**
+ * @route   POST /api/analytics/explanation-view
+ * @desc    Record an explanation view (increments counter)
+ * @access  Private
+ *
+ * Returns:
+ * - success: boolean
+ * - viewedToday: Updated count
+ * - remainingToday: Remaining views
+ * - limitReached: boolean
+ */
+router.post('/explanation-view', analyticsController.recordExplanationView.bind(analyticsController));
 
 /**
  * @route   GET /api/analytics

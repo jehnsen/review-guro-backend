@@ -125,6 +125,27 @@ class PracticeController {
       next(error);
     }
   }
+
+  /**
+   * GET /api/practice/limits
+   * Get daily practice limits and current usage
+   *
+   * Returns:
+   * - isPremium: boolean
+   * - dailyLimit: number (-1 for unlimited)
+   * - usedToday: number
+   * - remainingToday: number (-1 for unlimited)
+   */
+  async getDailyLimits(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const limits = await practiceService.getDailyLimits(userId);
+
+      sendSuccess(res, limits, 'Daily limits retrieved successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const practiceController = new PracticeController();

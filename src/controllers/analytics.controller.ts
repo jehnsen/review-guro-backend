@@ -5,6 +5,8 @@
 
 import { Request, Response, NextFunction } from 'express';
 import { analyticsService } from '../services/analytics.service';
+import { streakService } from '../services/streak.service';
+import { explanationAccessService } from '../services/explanationAccess.service';
 import { sendSuccess } from '../utils/response';
 
 export class AnalyticsController {
@@ -115,6 +117,62 @@ export class AnalyticsController {
       const userId = req.user!.userId;
       const allData = await analyticsService.getAllAnalytics(userId);
       sendSuccess(res, allData, 'All analytics data retrieved successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/analytics/streak
+   * Get streak status with repair information
+   */
+  async getStreakStatus(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const status = await streakService.getStreakStatus(userId);
+      sendSuccess(res, status, 'Streak status retrieved successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/analytics/streak/repair
+   * Repair a broken streak
+   */
+  async repairStreak(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const result = await streakService.repairStreak(userId);
+      sendSuccess(res, result, result.message);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * GET /api/analytics/explanation-limits
+   * Get explanation access limits (taste test)
+   */
+  async getExplanationLimits(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const limits = await explanationAccessService.getExplanationLimits(userId);
+      sendSuccess(res, limits, 'Explanation limits retrieved successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * POST /api/analytics/explanation-view
+   * Record an explanation view
+   */
+  async recordExplanationView(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+      const result = await explanationAccessService.recordExplanationView(userId);
+      sendSuccess(res, result, 'Explanation view recorded');
     } catch (error) {
       next(error);
     }

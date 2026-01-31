@@ -6,7 +6,8 @@
 import { Difficulty, QuestionCategory, ExamStatus } from '@prisma/client';
 import { mockExamRepository } from '../repositories/mockExam.repository';
 import { questionRepository } from '../repositories/question.repository';
-import { BadRequestError, NotFoundError } from '../utils/errors';
+import { userRepository } from '../repositories/user.repository';
+import { BadRequestError, NotFoundError, ForbiddenError } from '../utils/errors';
 import {
   CreateMockExamDTO,
   MockExamResponse,
@@ -14,6 +15,7 @@ import {
   MockExamHistoryResponse,
   QuestionResponse,
 } from '../types';
+import { getUserAccessLimits, exceedsLimit } from '../utils/accessControl';
 
 export class MockExamService {
   /**
@@ -25,9 +27,46 @@ export class MockExamService {
    * 4. Return exam with questions (no correct answers revealed)
    */
   async createMockExam(userId: string, dto: CreateMockExamDTO): Promise<MockExamResponse> {
-    // Validate total questions
+    // Get user to check premium status
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Check access limits
+    const accessLimits = getUserAccessLimits(user);
+
+    // Validate total questions based on user tier
+    const maxQuestions = accessLimits.mockExamQuestionsLimit;
     if (dto.totalQuestions < 1 || dto.totalQuestions > 170) {
       throw new BadRequestError('Total questions must be between 1 and 170');
+    }
+
+    // Enforce free tier question limit
+    if (dto.totalQuestions > maxQuestions) {
+      throw new ForbiddenError(
+        `Free users can create mock exams with up to ${maxQuestions} questions. Upgrade to Season Pass for exams with up to 170 questions.`
+      );
+    }
+
+    // Check monthly exam limit for free users
+    if (!accessLimits.canAccessPremiumFeatures) {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const monthlyExams = await mockExamRepository.findByUserId(userId, {
+        status: ExamStatus.COMPLETED,
+      });
+
+      const examsThisMonth = monthlyExams.filter(exam =>
+        exam.completedAt && exam.completedAt >= startOfMonth
+      );
+
+      if (exceedsLimit(examsThisMonth.length, accessLimits.mockExamsPerMonth)) {
+        throw new ForbiddenError(
+          `Monthly mock exam limit reached. Free users can take up to ${accessLimits.mockExamsPerMonth} mock exams per month. Upgrade to Season Pass for unlimited mock exams.`
+        );
+      }
     }
 
     // Validate time limit
@@ -557,6 +596,56 @@ export class MockExamService {
       examId: exam.id,
       startedAt: exam.startedAt.toISOString(),
       timeRemainingSeconds,
+    };
+  }
+
+  /**
+   * Get mock exam limits and usage for the user
+   */
+  async getMockExamLimits(userId: string): Promise<{
+    isPremium: boolean;
+    maxQuestionsPerExam: number;
+    maxExamsPerMonth: number;
+    examsUsedThisMonth: number;
+    remainingExamsThisMonth: number;
+  }> {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const accessLimits = getUserAccessLimits(user);
+
+    // Get this month's completed exams
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const monthlyExams = await mockExamRepository.findByUserId(userId, {
+      status: ExamStatus.COMPLETED,
+    });
+
+    const examsThisMonth = monthlyExams.filter(exam =>
+      exam.completedAt && exam.completedAt >= startOfMonth
+    );
+
+    const maxExamsPerMonth = accessLimits.mockExamsPerMonth === Infinity
+      ? -1 // Use -1 to represent unlimited
+      : accessLimits.mockExamsPerMonth;
+
+    const remainingExamsThisMonth = accessLimits.mockExamsPerMonth === Infinity
+      ? -1 // Use -1 to represent unlimited
+      : Math.max(0, accessLimits.mockExamsPerMonth - examsThisMonth.length);
+
+    const maxQuestionsPerExam = accessLimits.mockExamQuestionsLimit === Infinity
+      ? 170 // Max allowed by system
+      : accessLimits.mockExamQuestionsLimit;
+
+    return {
+      isPremium: accessLimits.canAccessPremiumFeatures,
+      maxQuestionsPerExam,
+      maxExamsPerMonth,
+      examsUsedThisMonth: examsThisMonth.length,
+      remainingExamsThisMonth,
     };
   }
 }

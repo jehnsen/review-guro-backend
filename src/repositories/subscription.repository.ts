@@ -51,6 +51,9 @@ class SubscriptionRepository {
   async update(userId: string, data: {
     status?: string;
     expiresAt?: Date;
+    paymentMethod?: string;
+    transactionId?: string;
+    paymentProvider?: string;
   }) {
     return prisma.subscription.update({
       where: { userId },

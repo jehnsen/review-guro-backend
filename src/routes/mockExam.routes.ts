@@ -55,6 +55,20 @@ router.get('/in-progress', mockExamController.checkInProgress.bind(mockExamContr
 router.get('/history', mockExamController.getHistory.bind(mockExamController));
 
 /**
+ * @route   GET /api/mock-exams/limits
+ * @desc    Get mock exam limits and current usage
+ * @access  Private
+ *
+ * Returns:
+ * - isPremium: boolean
+ * - maxQuestionsPerExam: number
+ * - maxExamsPerMonth: number (-1 for unlimited)
+ * - examsUsedThisMonth: number
+ * - remainingExamsThisMonth: number (-1 for unlimited)
+ */
+router.get('/limits', mockExamController.getLimits.bind(mockExamController));
+
+/**
  * @route   GET /api/mock-exams/:examId
  * @desc    Get current exam state
  * @access  Private

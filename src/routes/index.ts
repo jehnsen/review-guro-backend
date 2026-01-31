@@ -14,6 +14,7 @@ import subscriptionRoutes from './subscription.routes';
 import paymentRoutes from './payment.routes';
 import paymongoRoutes from './paymongo.routes';
 import paymentVerificationRoutes from './paymentVerification.routes';
+import seasonPassCodeRoutes from './seasonPassCode.routes';
 
 const router = Router();
 
@@ -43,5 +44,8 @@ router.use('/payments', paymentRoutes);
 // Payment system routes
 router.use('/payments/paymongo', paymongoRoutes);
 router.use('/payments/manual', paymentVerificationRoutes);
+
+// Season pass code routes
+router.use('/season-pass-codes', seasonPassCodeRoutes);
 
 export default router;

@@ -179,6 +179,29 @@ export class MockExamController {
       next(error);
     }
   }
+
+  /**
+   * GET /api/mock-exams/limits
+   * Get mock exam limits and current usage
+   *
+   * Returns:
+   * - isPremium: boolean
+   * - maxQuestionsPerExam: number
+   * - maxExamsPerMonth: number (-1 for unlimited)
+   * - examsUsedThisMonth: number
+   * - remainingExamsThisMonth: number (-1 for unlimited)
+   */
+  async getLimits(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const userId = req.user!.userId;
+
+      const limits = await mockExamService.getMockExamLimits(userId);
+
+      sendSuccess(res, limits, 'Mock exam limits retrieved successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const mockExamController = new MockExamController();

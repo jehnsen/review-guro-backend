@@ -6,8 +6,11 @@
 import { QuestionCategory } from '@prisma/client';
 import { questionRepository } from '../repositories/question.repository';
 import { progressRepository } from '../repositories/progress.repository';
+import { dailyPracticeUsageRepository } from '../repositories/dailyPracticeUsage.repository';
+import { userRepository } from '../repositories/user.repository';
 import { aiService } from './ai.service';
 import { cacheService } from './cache.service';
+import { streakService } from './streak.service';
 import { config } from '../config/env';
 import {
   SubmitAnswerDTO,
@@ -17,7 +20,8 @@ import {
   CategoryProgressResponse,
   CategoryProgress,
 } from '../types';
-import { NotFoundError, BadRequestError } from '../utils/errors';
+import { NotFoundError, BadRequestError, ForbiddenError } from '../utils/errors';
+import { getUserAccessLimits, exceedsLimit } from '../utils/accessControl';
 
 // Points awarded based on difficulty
 const POINTS_BY_DIFFICULTY = {
@@ -39,6 +43,22 @@ class PracticeService {
     dto: SubmitAnswerDTO
   ): Promise<SubmitAnswerResponse> {
     const { questionId, selectedOptionId } = dto;
+
+    // Get user to check premium status
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    // Check free tier limits
+    const accessLimits = getUserAccessLimits(user);
+    const todayCount = await dailyPracticeUsageRepository.getTodayCount(userId);
+
+    if (exceedsLimit(todayCount, accessLimits.practiceLimitPerDay)) {
+      throw new ForbiddenError(
+        `Daily practice limit reached. Free users can answer up to ${accessLimits.practiceLimitPerDay} questions per day. Upgrade to Season Pass for unlimited access.`
+      );
+    }
 
     // Fetch the question
     const question = await questionRepository.findById(questionId);
@@ -66,6 +86,14 @@ class PracticeService {
       selectedOptionId,
       isCorrect,
     });
+
+    // Increment daily practice count for free tier users
+    if (!accessLimits.canAccessPremiumFeatures) {
+      await dailyPracticeUsageRepository.incrementTodayCount(userId);
+    }
+
+    // Update user's streak (activity tracking)
+    await streakService.updateStreak(userId);
 
     return {
       isCorrect,
@@ -147,6 +175,39 @@ class PracticeService {
     accuracy: number;
   }> {
     return progressRepository.getUserStats(userId);
+  }
+
+  /**
+   * Get daily practice limits and usage for the user
+   */
+  async getDailyLimits(userId: string): Promise<{
+    isPremium: boolean;
+    dailyLimit: number;
+    usedToday: number;
+    remainingToday: number;
+  }> {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const accessLimits = getUserAccessLimits(user);
+    const usedToday = await dailyPracticeUsageRepository.getTodayCount(userId);
+
+    const dailyLimit = accessLimits.practiceLimitPerDay === Infinity
+      ? -1 // Use -1 to represent unlimited
+      : accessLimits.practiceLimitPerDay;
+
+    const remainingToday = accessLimits.practiceLimitPerDay === Infinity
+      ? -1 // Use -1 to represent unlimited
+      : Math.max(0, accessLimits.practiceLimitPerDay - usedToday);
+
+    return {
+      isPremium: accessLimits.canAccessPremiumFeatures,
+      dailyLimit,
+      usedToday,
+      remainingToday,
+    };
   }
 
   /**
