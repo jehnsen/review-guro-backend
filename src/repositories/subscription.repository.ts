@@ -62,6 +62,43 @@ class SubscriptionRepository {
   }
 
   /**
+   * Create subscription with user premium update in atomic transaction
+   * CRITICAL: Ensures both subscription creation and premium activation happen together
+   * Prevents scenario where payment succeeds but user doesn't get premium access
+   */
+  async createWithUserUpdate(data: {
+    userId: string;
+    planName: string;
+    planPrice: number;
+    purchaseDate: Date;
+    paymentMethod: string;
+    amountPaid: number;
+    transactionId?: string;
+    referenceNumber?: string;
+    paymentProvider?: string;
+    status?: string;
+    expiresAt?: Date | null;
+  }) {
+    return prisma.$transaction(async (tx) => {
+      // 1. Create subscription
+      const subscription = await tx.subscription.create({
+        data,
+      });
+
+      // 2. Activate user premium status
+      await tx.user.update({
+        where: { id: data.userId },
+        data: {
+          isPremium: true,
+          premiumExpiry: data.expiresAt,
+        },
+      });
+
+      return subscription;
+    });
+  }
+
+  /**
    * Check if user has active subscription
    */
   async hasActiveSubscription(userId: string): Promise<boolean> {

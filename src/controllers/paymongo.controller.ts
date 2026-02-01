@@ -115,6 +115,9 @@ export class PayMongoController {
 
   /**
    * Handle successful payment
+   * CRITICAL: Uses transaction to ensure atomicity
+   * If subscription creation succeeds but premium activation fails,
+   * user would have paid but not received premium access
    */
   private async handlePaymentPaid(event: any): Promise<void> {
     const payment = event.data?.attributes?.data;
@@ -137,8 +140,9 @@ export class PayMongoController {
     const amount = paymongoService.toPesos(payment.attributes.amount);
     const paymentMethod = payment.attributes.payment_method_used || 'card';
 
-    // Create subscription
-    await subscriptionRepository.create({
+    // ATOMIC TRANSACTION: Both subscription creation and premium activation
+    // must succeed together, or both fail (prevents partial payment processing)
+    await subscriptionRepository.createWithUserUpdate({
       userId,
       planName: 'Season Pass',
       planPrice: amount,
@@ -151,9 +155,6 @@ export class PayMongoController {
       status: 'active',
       expiresAt: null, // Season pass doesn't expire
     });
-
-    // Activate premium
-    await userRepository.updatePremiumStatus(userId, true, null);
 
     console.log(`✅ Premium activated for user ${userId} via PayMongo`);
 
